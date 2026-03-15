@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), sans-serif;
+
+  --color-primary-50: #fefce8;
+  --color-primary-100: #fef9c3;
+  --color-primary-200: #fef08a;
+  --color-primary-300: #fde047;
+  --color-primary-400: #facc15;
+  --color-primary-500: #eab308;
+  --color-primary-600: #ca8a04;
+  --color-primary-700: #a16207;
+  --color-primary-800: #854d0e;
+  --color-primary-900: #713f12;
+
+  /* Changing Earth (Warm) to Neutral (Clean Gray) for better Yellow contrast */
+  --color-earth-50: #fafafa;
+  --color-earth-100: #f5f5f5;
+  --color-earth-200: #e5e5e5;
+  --color-earth-300: #d4d4d4;
+  --color-earth-400: #a3a3a3;
+  --color-earth-500: #737373;
+  --color-earth-600: #525252;
+  --color-earth-700: #404040;
+  --color-earth-800: #262626;
+  --color-earth-900: #171717;
+
+  --color-accent-500: #059669;
+  --color-accent-600: #047857;
+}
+
+:root {
+  --background: #ffffff; /* Clean White */
+  --foreground: #171717; /* Neutral 900 */
+}
+
+@layer base {
+  html, body {
+    @apply overflow-x-hidden;
+  }
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .btn-primary {
+    @apply bg-primary-400 text-earth-900 hover:bg-primary-500 transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg rounded-lg px-6 py-2.5 font-bold;
+  }
+  .btn-outline {
+    @apply border-2 border-primary-600 text-primary-700 hover:bg-primary-50 transition-colors rounded-lg px-6 py-2 font-bold;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+  
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

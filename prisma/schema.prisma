@@ -1,0 +1,147 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x", "debian-openssl-1.1.x"]
+  engineType    = "binary"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin_contact {
+  id        String   @id @default(uuid())
+  name      String
+  number    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Int
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model admin {
+  id       String  @id @default(uuid())
+  username String  @unique(map: "Admin_username_key")
+  password String
+  name     String? @default("Admin") @db.VarChar(255)
+}
+
+model booking {
+  id                     String        @id @default(uuid())
+  customerName           String
+  customerPhone          String
+  customerEmail          String?
+  startDate              DateTime
+  endDate                DateTime
+  totalPrice             Int
+  status                 String        @default("PENDING")
+  paymentMethod          String?       @default("COD") // COD, DP_50, FULL
+  mayarTransactionId     String?       @unique
+  mayarTransactionStatus String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  bookingitem            bookingitem[]
+}
+
+model bookingitem {
+  id         String    @id @default(uuid())
+  bookingId  String
+  productId  String
+  quantity   Int
+  endDate    DateTime?
+  pickupTime String?
+  returnTime String?
+  startDate  DateTime?
+  booking    booking   @relation(fields: [bookingId], references: [id], map: "BookingItem_bookingId_fkey")
+  product    product   @relation(fields: [productId], references: [id], map: "BookingItem_productId_fkey")
+
+  @@index([bookingId], map: "BookingItem_bookingId_fkey")
+  @@index([productId], map: "BookingItem_productId_fkey")
+}
+
+model bookingstep {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  icon        String
+  stepOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model location {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  mapUrl    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model product {
+  id             String        @id @default(uuid())
+  name           String
+  description    String
+  stock          Int
+  image          String
+  category       String
+  createdAt      DateTime      @default(now())
+  price1Day      Int           @default(0)
+  price2Days     Int           @default(0)
+  price3Days     Int           @default(0)
+  priceOver3Days Int           @default(0)
+  isFeatured     Boolean       @default(false)
+  bookingitem    bookingitem[]
+  updatedAt      DateTime      @updatedAt
+}
+
+model rentalterm {
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model sitesettings {
+  id                   String   @id @default(uuid())
+  whatsappNumber       String   @default("6281234567890")
+  confirmationAdminContactId String?
+  updatedAt            DateTime @updatedAt
+  aboutDescription     String?  @db.Text
+  aboutTitle           String   @default("Tentang SayEquipment")
+  heroBackgroundImage  String?
+  aboutBackgroundImage String?
+  address              String?  @db.Text
+  googleMapsUrl        String?  @db.Text
+  operationalHours     String?  @db.Text
+  email                String?
+  instagram            String?
+}
+
+model testimonial {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  content   String   @db.Text
+  rating    Int      @default(5)
+  avatar    String?
+  isShow    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
