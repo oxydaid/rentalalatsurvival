@@ -40,6 +40,7 @@ function getPaymentSummary(booking: any) {
 export function BookingList({ bookings }: BookingListProps) {
   const router = useRouter()
   const [editingBooking, setEditingBooking] = useState<any | null>(null)
+  const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null)
 
   const handlePrintInvoice = (booking: any) => {
     try {
@@ -90,13 +91,23 @@ export function BookingList({ bookings }: BookingListProps) {
   }
 
   const handleCancelBooking = async (bookingId: string) => {
-      // In a real app, use a server action passed as prop or imported if client-side safe
-      // Here we rely on the server action logic but triggered via form action in parent usually.
-      // But since we are moving to client component, we need to call server action explicitly.
-      // Let's assume we pass a cancel handler or import the server action if possible.
-      // Since `cancelBooking` was defined inside the page component in the previous code, 
-      // we need to move it to a proper server action file or pass it down.
-      // For now, I'll focus on the edit functionality as requested.
+    const ok = confirm("Batalkan & hapus pesanan ini? Tindakan ini tidak bisa dibatalkan.")
+    if (!ok) return
+
+    setDeletingBookingId(bookingId)
+    try {
+      const result = await deleteBooking(bookingId)
+      if (result?.success) {
+        toast.success("Pesanan berhasil dihapus")
+        router.refresh()
+        return
+      }
+      toast.error(result?.error || "Gagal menghapus pesanan")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus pesanan")
+    } finally {
+      setDeletingBookingId(null)
+    }
   }
   
   // We need to import the actions. 
@@ -106,9 +117,9 @@ export function BookingList({ bookings }: BookingListProps) {
     const result = await updateBookingStatus(bookingId, status)
     if (result.success) {
         toast.success(`Status updated to ${status}`)
-        // router.refresh() // updateBookingStatus already revalidates path
+        router.refresh()
     } else {
-        toast.error("Failed to update status")
+        toast.error(result?.error || "Failed to update status")
     }
   }
 
@@ -192,9 +203,10 @@ export function BookingList({ bookings }: BookingListProps) {
               <button 
                 onClick={() => handleCancelBooking(booking.id)}
                 className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors"
+                disabled={deletingBookingId === booking.id}
               >
                 <XCircle size={16} />
-                Batalkan & Hapus
+                {deletingBookingId === booking.id ? "Menghapus..." : "Batalkan & Hapus"}
               </button>
 
               {/* Status Actions */}
