@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Panduan Deployment Manual
 
-## Getting Started
+Berikut adalah cara deploy aplikasi ini ke hosting (VPS atau cPanel dengan Node.js Support) tanpa Docker.
 
-First, run the development server:
+## Persiapan Lingkungan (Server)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Pastikan server Anda memiliki:
+- **Node.js** (Versi 18 atau 20 direkomendasikan)
+- **MySQL Database**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Metode 1: Upload Source Code (Direkomendasikan)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Cara ini paling umum. Anda mengupload kode sumber, lalu build di server.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Siapkan File**
+   Compress/Zip semua file project ini, **KECUALI**:
+   - Folder `node_modules`
+   - Folder `.next`
+   - Folder `.git`
 
-## Learn More
+2. **Upload ke Server**
+   - Upload file zip ke server Anda.
+   - Extract file tersebut.
 
-To learn more about Next.js, take a look at the following resources:
+3. **Install Dependencies**
+   Di terminal server (atau console cPanel), jalankan:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. **Setup Database**
+   - Buat file `.env` di server (bisa copy dari `.env.example` jika ada, atau buat baru).
+   - Isi `DATABASE_URL` dengan koneksi database server Anda.
+     Contoh: `DATABASE_URL="mysql://user:password@localhost:3306/nama_database"`
+   
+   - Jalankan migrasi database:
+     ```bash
+     npx prisma generate
+     npx prisma migrate deploy
+     ```
+   
+   - (Opsional) Isi data awal:
+     ```bash
+     npx prisma db seed
+     ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Build Aplikasi**
+   ```bash
+   npm run build
+   ```
 
-## Deploy on Vercel
+6. **Jalankan Aplikasi**
+   ```bash
+   npm start
+   ```
+   Aplikasi akan berjalan di port 3000 (default).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Metode 2: Upload Hasil Build (Standalone)
+
+Jika Anda ingin build di komputer lokal dan hanya upload hasilnya (lebih hemat resource server).
+
+1. **Build di Lokal**
+   Pastikan di `next.config.ts` sudah ada `output: "standalone"`.
+   Jalankan:
+   ```bash
+   npm run build
+   ```
+
+2. **Siapkan Folder Deploy**
+   Akan muncul folder `.next/standalone`. Folder ini berisi server minimal.
+   Namun, Anda perlu meng-copy folder `public` dan `.next/static` agar gambar dan style termuat.
+
+   Struktur folder yang harus di-zip:
+   - Copy folder `public` -> ke dalam `.next/standalone/public`
+   - Copy folder `.next/static` -> ke dalam `.next/standalone/.next/static`
+   
+   *Catatan: Folder `.next/standalone` sudah berisi `node_modules` yang dibutuhkan.*
+
+3. **Upload & Run**
+   - Zip isi folder `.next/standalone` (yang sudah ditambah public & static tadi).
+   - Upload ke server.
+   - Set Environment Variable `DATABASE_URL` dan `PORT` (jika perlu).
+   - Jalankan:
+     ```bash
+     node server.js
+     ```
+
+## Catatan Penting
+
+- **File Uploads**: Aplikasi ini menyimpan gambar upload di folder `public/uploads`. Pastikan folder ini memiliki izin tulis (write permission) di server.
+- **Persistent Data**: Jika Anda redeploy (hapus folder lama, upload baru), pastikan folder `public/uploads` **DIBACKUP** atau jangan ditimpa, agar gambar-gambar produk tidak hilang.
